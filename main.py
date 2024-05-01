@@ -5,6 +5,7 @@ from config import config, quitGame
 from classes.intro import play_intro
 from classes.menu import Menu
 from classes.Jeff import JeffGame
+from classes.PauseMenu import PauseMenu
 
 WINDOW_SIZE = (480,720)
 cfg = config(*WINDOW_SIZE)
@@ -13,17 +14,26 @@ def main():
   play_intro(cfg.w, cfg.h, cfg.display)
 
   menu = Menu(WINDOW_SIZE,cfg.display, cfg.clock)
+
   while not menu.start:
     menu.update()
 
-  menu.reset()
-  del menu 
+  del menu
 
   game = JeffGame(WINDOW_SIZE, cfg.display, cfg.clock)
+  pauseMenu = PauseMenu(WINDOW_SIZE, cfg.display, cfg.clock)
 
   while not game.restart:
     if game.pause:
-      pass
+      answer = pauseMenu.update()
+      match answer:
+        case "play":
+          game.pause = False
+        case "restart":
+          # TODO
+          pass
+        case "":
+          pass
     else:
       game.play_step()
 
