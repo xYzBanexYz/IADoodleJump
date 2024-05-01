@@ -1,7 +1,7 @@
-# IADoodleJump
-IA générative pour Doodle Jump. Utilise l'apprentissage par renforcement et les GAN pour créer une IA autonome capable de jouer à Doodle Jump en générant des niveaux de jeu variés. Contributions bienvenues. En cours de développement.
+# JeffJump
+JeffJump est un jeu basé sur le célèbre DoodleJump ! Il est adapté au monde des fameux et légendaires Tuche. Et au coeur de ce projet, on retrouve la NevadIA, un algorithme génératif qui joue à JeffJump. 
 
-# Recréation du jeu Doodle Jump en Python grace à l'aide de ses built-in et de ses bibliothèque
+# Recréation du jeu sous la forme JeffJump
 
 
-# Création d'un modèle d'IA avec un apprentissage par renforcement
+# Création d'un modèle d'IA avec un apprentissage par renforcement NevadIA
