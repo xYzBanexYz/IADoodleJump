@@ -4,30 +4,33 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('config')
-class config:
-  def __init__(self, w=480, h=720):
-    
-    self.w = w
-    self.h = h
 
-    # Initialisation fenetre 
-    try:
-      pygame.init()
-    except:
-      logger.error("Erreur initialisation pygame...")
-      pygame.quit()
-      quit()
 
-    self.display = pygame.display.set_mode((self.w, self.h))
-    
-    
-    icon = pygame.image.load("./content/images/jeff.png").convert_alpha()
-    pygame.display.set_icon(icon)
-    pygame.display.set_caption('Jeff Jump')
+try:
+  pygame.init()
+except:
+  logger.error("Erreur initialisation pygame...")
+  pygame.quit()
+  quit()
 
-    logger.info("Fenêtre lancée.")
+#global variables
+WINDOW_SIZE = (480,720)
 
-    self.clock = pygame.time.Clock()
+# Jeff.py
+PADDING = 20
+
+# Player.py
+SPEED = 7
+JUMP_HEIGHT = 12
+GRAVITY = 0.25
+FRICTION = -0.10
+
+#pygame stuff
+clock = pygame.time.Clock()
+display = pygame.display.set_mode(WINDOW_SIZE)
+icon = pygame.image.load("./content/images/jeff.png").convert_alpha()
+pygame.display.set_icon(icon)
+pygame.display.set_caption('Jeff Jump')
 
 def quitGame():
   pygame.quit()

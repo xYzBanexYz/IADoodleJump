@@ -1,43 +1,48 @@
-import random
 import pygame
 
-from config import config, quitGame
+from config import quitGame
 from classes.intro import play_intro
 from classes.menu import Menu
 from classes.Jeff import JeffGame
 from classes.PauseMenu import PauseMenu
 
-WINDOW_SIZE = (480,720)
-cfg = config(*WINDOW_SIZE)
-
 def main():
-  play_intro(cfg.w, cfg.h, cfg.display)
+  # play_intro()
 
-  menu = Menu(WINDOW_SIZE,cfg.display, cfg.clock)
-
-  while not menu.start:
-    menu.update()
-
-  del menu
-
-  game = JeffGame(WINDOW_SIZE, cfg.display, cfg.clock)
-  pauseMenu = PauseMenu(WINDOW_SIZE, cfg.display, cfg.clock)
+  menu = Menu()
+  game = JeffGame()
+  pauseMenu = PauseMenu()
 
   while not game.restart:
+
     if game.pause:
+      pygame.mouse.set_visible(1)
       answer = pauseMenu.update()
       match answer:
         case "play":
           game.pause = False
         case "restart":
-          # TODO
-          pass
-        case "":
+          game.restart()
+        case "menu":
+          game.pause = False
+          game.menu = True
+
+    elif game.menu:
+      pygame.mouse.set_visible(1000)
+      answer = menu.update()
+      match answer:
+        case "play":
+          game.restartGame()
+          game.menu = False
+        case "exit":
+          quitGame()
           pass
     else:
+      pygame.mouse.set_visible(0)
       game.play_step()
 
   return "continue"
+
 
 if __name__ == '__main__':
 

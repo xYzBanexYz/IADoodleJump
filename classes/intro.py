@@ -1,9 +1,11 @@
 import pygame
 
-def play_intro(w,h, display):
-    # pygame.mouse.set_visible(False)
+from config import WINDOW_SIZE, display
+
+def play_intro():
+    pygame.mouse.set_visible(0)
     pro_max = pygame.image.load("./content/images/pro_max_plus.png").convert_alpha()
-    pro_max_rect = pro_max.get_rect(center=(w//2, h//2))
+    pro_max_rect = pro_max.get_rect(center=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2))
     
     pygame.mixer.music.load("./content/sounds/effects/intro.mp3")
     pygame.mixer.music.set_volume(0.5)

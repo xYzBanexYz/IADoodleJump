@@ -1,112 +1,238 @@
 import pygame
-import os
 import random
 
-from config import quitGame
+from config import WINDOW_SIZE, PADDING, clock, display, quitGame
 from entities.player import Player
-from classes.platforms import Platforms
+from entities.ennemy import Ennemy
+from entities.spring import Spring 
+from classes.platforms import Platforms, Nevada, MovingFrite
+from classes.button import Button
 
 pygame.font.init()
 font = pygame.font.Font("./content/fonts/PixelifySansSemiBold.ttf", 20)
+fontGameOver = pygame.font.Font("./content/fonts/PixelifySansSemiBold.ttf", 50)
 
-PLAT_TYPE = ["frite", "nevada"]
-SCROLL_SPEED = 5
 
 class JeffGame:
-  # Initialisation du jeu
-  def __init__(self, windowSize, screen, clock):
+  def __init__(self):
+    self.restartGame(menu=True)
+
+  def restartGame(self, menu=False):
     self.pause = False
-    self.windowSize = windowSize
+    self.menu = menu
     self.restart = False
-    self.display = screen
-    self.clock = clock
+    self.ennemy = False
+    self.gameOver = False
 
-    self.player = pygame.sprite.GroupSingle()
+    firstPos = (random.randrange(50, WINDOW_SIZE[0] - 50), random.randrange(WINDOW_SIZE[1] // 2, WINDOW_SIZE[1] - 50))
 
-    self.firstPos = (random.randrange(50, windowSize[0]- 50), random.randrange(windowSize[1] // 2, windowSize[1]-50))
-    self.player.add(Player(self.windowSize, *(self.firstPos)))
+    self.player = pygame.sprite.GroupSingle(Player(*firstPos))
+    
+    self.allSprites = pygame.sprite.Group()
+    self.allSprites.add(self.player, Platforms(*firstPos), Platforms(firstPos[0] - 100, firstPos[1] - 270))
+    
+    for i in range(4):
+        platform = self.genPlatforms(False)
+        if platform:
+            self.allSprites.add(platform)
 
-    self.platformsGroup = pygame.sprite.Group()
-    self.platformsGroup.add(Platforms("frite", *(self.firstPos), windowSize))
-    self.initializePlatforms()
+    for i in range(4):
+        platform = self.genPlatforms()
+        if platform:
+            self.allSprites.add(platform)
 
     self.background = pygame.image.load("./content/images/Game/back.png").convert()
     self.score = 1
-
+    self.count = 0
 
 
   def play_step(self):
-
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
           quitGame()
       elif event.type == pygame.KEYDOWN: 
         if event.key == pygame.K_ESCAPE:
           self.pause =  True
-    
 
-    self._updateUI()
-    self._checkCollisions()
+    if not self.gameOver:
+      self._update()
+      self.player.update()
+      self._checkCollisions()
+      self._climb()
+    else:
+      self.gameOverScreen()
 
-    self.player.update(self._checkCollisions())
-    self.genPlatforms(self.player.sprite.rect.y)
 
+    clock.tick(60)
 
-    self.climb()
-
-    self.clock.tick(60)
-
-  def _updateUI(self):
-    self.display.blit(self.background, (0,0))
+  def _update(self):
+    display.blit(self.background, (0,0))
 
     text = font.render(f"Score: {self.score}", False, "BLACK")
-    self.display.blit(text, [5, 5])
+    display.blit(text, [5, 5])
 
-    self.player.draw(self.display)
-    self.platformsGroup.draw(self.display)
+    self.allSprites.draw(display)
     pygame.display.update()
   
-  # Game over
-  def _gameover(self):
-    pass
-    # TODO
-
   def _checkCollisions(self):
     player_sprite = self.player.sprite
-    collision_sprite = pygame.sprite.spritecollideany(player_sprite, self.platformsGroup)
-    if collision_sprite:
-        if player_sprite.rect.bottom <= collision_sprite.rect.centery:
-            return True
-    return False
+    for spr in self.allSprites:
+      if isinstance(spr, Spring):
+        if pygame.sprite.collide_rect(player_sprite, spr) and spr.low == False:
+          if self.player.sprite.rect.bottom <= spr.rect.center[1]: 
+            self.player.sprite.jump(2)
+            spr.lower()
 
-  def climb(self):
-    if self.player.sprite.rect.top < self.windowSize[1] // 4:
+      if isinstance(spr, Platforms):
+        if pygame.sprite.collide_rect(player_sprite, spr):
+          if self.player.sprite.rect.bottom <= spr.rect.center[1]: 
+            self.player.sprite.jump()
+            if isinstance(spr, Nevada):
+              spr.crash()
+
+        if spr.rect.y >= WINDOW_SIZE[1]:
+          self.allSprites.remove(spr)
+
+      if (isinstance(spr, Nevada) and spr.crashed) or isinstance(spr, MovingFrite):
+        spr.move()
+
+      if isinstance(spr, Ennemy):
+        spr.move()
+        if pygame.sprite.collide_rect(player_sprite, spr):
+          self.gameOver = True
+          self.playLoseMusic()
+        if spr.rect.y > WINDOW_SIZE[1]:
+          self.allSprites.remove(spr)
+          self.ennemy = False
+
+
+  def _climb(self):
+    if self.player.sprite.rect.top < WINDOW_SIZE[1] // 4:
       self.player.sprite.pos.y += abs(self.player.sprite.vel.y)
       
-      for platform in self.platformsGroup:
-          platform.rect.y += abs(self.player.sprite.vel.y)
+      # Search for platforms to move
+      for spr in self.allSprites:
+          spr.rect.y += abs(self.player.sprite.vel.y)
+
+          if isinstance(spr, Platforms):
+            
+            if spr.rect.top > WINDOW_SIZE[1]:
+                # Supprime si la plateforme n'est plus sur l'écran
+                if (spr.spring != None):
+                  self.allSprites.remove(spr.spring)
+                self.allSprites.remove(spr)
+                spr.kill()
+                self.score += 10
+
+                # Ajoute une nouvelle plateforme pour compenser
+                new_plat = self.genPlatforms()
+                if new_plat:
+                  self.allSprites.add(new_plat)
+                  if new_plat.spring != None:
+                    self.allSprites.add(new_plat.spring)
+      
+      if not self.ennemy:
+        rnd = random.randint(0,100)
+        if rnd > 95 and self.score % 2 == 1:
+          x, y = random.randint(0, WINDOW_SIZE[0]), random.randint(-100, -20)
+          self.allSprites.add(Ennemy(x, y))
+          self.ennemy = True
+
+    elif self.player.sprite.rect.bottom > WINDOW_SIZE[1]:
+      self.count += abs(self.player.sprite.vel.y)
+      self.player.sprite.pos.y -= abs(self.player.sprite.vel.y)
+      
+      for spr in self.allSprites:
+        spr.rect.y -= abs(self.player.sprite.vel.y)
+
+      if self.count > 1500:
+        self.gameOver = True
+        self.playLoseMusic()
+        for spr in self.allSprites:
+          self.allSprites.remove(spr)
+          spr.kill()
+
+  def genPlatforms(self, top=True):
+    x = random.randint(65, WINDOW_SIZE[0] - 65) # la moitié d'une plateforme fait 55px, ici avec une marge de 10
+ 
+    bad_ys = []
+    for plat in self.allSprites:
+      if isinstance(plat, Platforms):
+        bad_ys.append((plat.rect.y-PADDING, plat.rect.y + PADDING + plat.rect.height))
+
+    bad_ys.append((self.player.sprite.pos[1] - PADDING, self.player.sprite.pos[1] + PADDING + self.player.sprite.rect.height))    
+    max_attempts = 1000
+    attemps = 0
+    good = False
+
+    while not good and attemps < max_attempts:
+      if top:
+        y = random.randint(-200, 50)
+      else:
+        y = random.randint(0,WINDOW_SIZE[1] // 2)
+
+      good = True
+      for bad_y in bad_ys:
+        if bad_y[0] <= y <= bad_y[1]:
+          good = False
+          break
+      
+      attemps += 1
+
+    if not good:
+      return None
           
-          if platform.rect.top > self.windowSize[1]:
-              self.platformsGroup.remove(platform)
-              platform.kill()
-              self.score += 10
+    proba = random.randint(0,100)
 
-  def initializePlatforms(self):
-     for _ in range(5):
-        x, y = random.randint(50, self.windowSize[0]-50), random.randint(0, self.firstPos[1])
+    if proba > 75:
+      return MovingFrite(x,y)
+    elif 50 < proba <= 75:
+      return Nevada(x,y)
+    else:
+      return Platforms(x,y)
+    
+  def gameOverScreen(self):
+    
 
-        index = lambda: 0 if random.random() < 0.75 else 1
-        self.platformsGroup.add(Platforms(PLAT_TYPE[index()], x, y, self.windowSize))
+    pygame.mouse.set_visible(1)
+    text = fontGameOver.render(f"Score: {self.score}", True, "BLACK")
+    text_rect = text.get_rect(center=(WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2 - 130))
 
-  def genPlatforms(self, player_y):
-    while len(self.platformsGroup) < 7:
-        x, y = random.randint(50, self.windowSize[0]-50), random.randint(-(self.windowSize[1] // 2), 0)
-        
-        platform_accessible = any(abs(platform.rect.y - player_y) < 150 for platform in self.platformsGroup)
-        
-        if platform_accessible:
-            index = lambda: 0 if random.random() < 0.75 else 1
-            self.platformsGroup.add(Platforms(PLAT_TYPE[index()], x, y, self.windowSize))
-        else:
-            # Ajouter une plateforme de secours à une position accessible
-            self.platformsGroup.add(Platforms(PLAT_TYPE[0], random.randint(50, self.windowSize[0]-50), player_y + 150, self.windowSize))
+    textPng = pygame.image.load("./content/images/Menu/OverText.png").convert_alpha()
+    textPngRect = textPng.get_rect(topleft=(30,30))
+
+    self.jeffNiceTry = pygame.image.load("./content/images/Menu/niceTry.png").convert_alpha()
+    self.jeffNiceTryRect = self.jeffNiceTry.get_rect(bottomleft=(0, WINDOW_SIZE[1]))
+
+    restart_image = pygame.image.load("./content/images/Menu/GameOverRestart.png").convert_alpha()
+    self.restart_btn = Button(WINDOW_SIZE[0] // 2 + 50 , WINDOW_SIZE[1] //2 , restart_image,0.9)
+
+    menu_image = pygame.image.load("./content/images/Menu/GameOverMenu.png").convert_alpha()
+    self.menu_btn = Button(WINDOW_SIZE[0] // 2 + 150 , WINDOW_SIZE[1] //2 + 130 , menu_image,0.9)
+
+    display.blit(self.background, (0,0))
+    display.blit(self.jeffNiceTry, self.jeffNiceTryRect)
+    display.blit(text, text_rect)
+    display.blit(textPng, textPngRect)
+
+    self.restart_btn.draw(display)
+    self.menu_btn.draw(display)
+
+    if self.restart_btn.click():
+      self.lose.stop()
+      self.restartGame()
+
+    if self.menu_btn.click():
+      self.lose.stop()
+
+      self.menu = True
+      self.restartGame(True)
+
+    pygame.display.update()
+
+
+  def playLoseMusic(self):
+    pygame.mixer.music.pause()
+    self.lose = pygame.mixer.Sound("./content/sounds/effects/lose.mp3")
+    self.lose.set_volume(0.1)
+    self.lose.play() 
