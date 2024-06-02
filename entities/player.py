@@ -1,7 +1,6 @@
 import pygame
 from config import SPEED, JUMP_HEIGHT, GRAVITY, FRICTION, WINDOW_SIZE, quitGame
 
-
 vec = pygame.math.Vector2
 
 class Player(pygame.sprite.Sprite):
@@ -13,18 +12,29 @@ class Player(pygame.sprite.Sprite):
     self.jump_height = JUMP_HEIGHT
     self.collisions = False
 
-    jeffStand =  pygame.image.load("./content/images/Game/jeff_jumper_up.png").convert_alpha()
-    jeffJumping =  pygame.image.load("./content/images/Game/jeff_jumper_down.png").convert_alpha()
-    jeffSauce = pygame.image.load("./content/images/Game/jeffSauce.png").convert_alpha()
+    jeffStand = pygame.image.load("./content/images/Game/jeff_jumper_up.png").convert_alpha()
+    jeffJumping = pygame.image.load("./content/images/Game/jeff_jumper_down.png").convert_alpha()
+    jeffSauce1 = pygame.image.load("./content/images/Game/jeffSauce1.png").convert_alpha()
+    jeffSauce2 = pygame.image.load("./content/images/Game/jeffSauce2.png").convert_alpha()
 
-    self.jeffImage = [jeffStand, jeffJumping, jeffSauce]
+    self.jeffImage = [jeffStand, jeffJumping]
+    self.jeffSauceImages = [jeffSauce1, jeffSauce2]
     self.image = self.jeffImage[0]
     self.rect = self.image.get_rect(midbottom=(x, y-100))
     
-    self.pos = vec(x,y-100)
+    self.pos = vec(x, y-100)
     self.vel = vec(0, 0)
     self.acc = vec(0, 0)
     
+    self.sauce = False
+    self.sauceTime = 0
+    self.sauceDuration = 2000
+    self.sauceSound = pygame.mixer.Sound("./content/sounds/effects/sauce.mp3")
+    self.sauceSound.set_volume(0.3)
+    self.sauceIndex = 0
+    self.sauceAnimTime = 100  
+    self.sauceLastFrameTime = 0
+
     self.boingSound = pygame.mixer.Sound("./content/sounds/effects/boing.mp3")
     self.boingSound.set_volume(0.3)
 
@@ -48,14 +58,15 @@ class Player(pygame.sprite.Sprite):
       self.springSound.play()
     else:
       self.boingSound.play()
-    self.vel.y = -self.jump_height*boost
-
+    self.vel.y = -self.jump_height * boost
 
   def _gravity(self):
-    self.acc = vec(0, GRAVITY)
+    if not self.sauce:
+      self.acc = vec(0, GRAVITY)
+    else:
+      self.acc = vec(0, -GRAVITY*0.8 / 2) 
 
     self.acc.x += self.vel.x * FRICTION
-
     self.vel += self.acc
     self.pos += self.vel + 0.5 * self.acc
 
@@ -67,12 +78,30 @@ class Player(pygame.sprite.Sprite):
     self.rect.midbottom = self.pos
 
   def update(self):
-
     self._input()
     self._gravity()
 
-    if self.vel.magnitude() >= 7:
+    if self.sauce:
+      self._animate_sauce()
+    elif self.vel.magnitude() >= 7:
       self.image = self.jeffImage[1]
     else:
       self.image = self.jeffImage[0]
 
+    if self.sauce:
+      current_time = pygame.time.get_ticks()
+      if current_time - self.sauceTime > self.sauceDuration:
+        self.sauce = False  
+
+  def sauceJump(self):
+    self.sauce = True
+    self.sauceTime = pygame.time.get_ticks() 
+    self.sauceSound.play()
+  
+  def _animate_sauce(self):
+    current_time = pygame.time.get_ticks()
+    
+    if current_time - self.sauceLastFrameTime > self.sauceAnimTime:
+      self.sauceIndex = (self.sauceIndex + 1) % len(self.jeffSauceImages)
+      self.image = self.jeffSauceImages[self.sauceIndex]
+      self.sauceLastFrameTime = current_time

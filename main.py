@@ -7,7 +7,7 @@ from classes.Jeff import JeffGame
 from classes.PauseMenu import PauseMenu
 
 def main():
-  # play_intro()
+  play_intro()
 
   menu = Menu()
   game = JeffGame()
@@ -28,7 +28,7 @@ def main():
           game.menu = True
 
     elif game.menu:
-      pygame.mouse.set_visible(1000)
+      pygame.mouse.set_visible(1)
       answer = menu.update()
       match answer:
         case "play":

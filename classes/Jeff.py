@@ -1,17 +1,18 @@
 import pygame
+from pygame.math import Vector2
 import random
 
-from config import WINDOW_SIZE, PADDING, clock, display, quitGame
+from config import WINDOW_SIZE, PADDING, SCROLL_HEIGHT, clock, display, quitGame
 from entities.player import Player
 from entities.ennemy import Ennemy
 from entities.spring import Spring 
+from entities.sauce import Sauce 
 from classes.platforms import Platforms, Nevada, MovingFrite
 from classes.button import Button
 
 pygame.font.init()
 font = pygame.font.Font("./content/fonts/PixelifySansSemiBold.ttf", 20)
 fontGameOver = pygame.font.Font("./content/fonts/PixelifySansSemiBold.ttf", 50)
-
 
 class JeffGame:
   def __init__(self):
@@ -23,8 +24,7 @@ class JeffGame:
     self.restart = False
     self.ennemy = False
     self.gameOver = False
-
-    firstPos = (random.randrange(50, WINDOW_SIZE[0] - 50), random.randrange(WINDOW_SIZE[1] // 2, WINDOW_SIZE[1] - 50))
+    firstPos = (random.randrange(50, WINDOW_SIZE[0] - 50), random.randrange(SCROLL_HEIGHT + 30, WINDOW_SIZE[1] - 50))
 
     self.player = pygame.sprite.GroupSingle(Player(*firstPos))
     
@@ -70,7 +70,6 @@ class JeffGame:
 
     text = font.render(f"Score: {self.score}", False, "BLACK")
     display.blit(text, [5, 5])
-
     self.allSprites.draw(display)
     pygame.display.update()
   
@@ -82,6 +81,12 @@ class JeffGame:
           if self.player.sprite.rect.bottom <= spr.rect.center[1]: 
             self.player.sprite.jump(2)
             spr.lower()
+
+      if isinstance(spr, Sauce):
+        if pygame.sprite.collide_rect(player_sprite, spr):
+          if self.player.sprite.rect.bottom <= spr.rect.center[1]: 
+            self.player.sprite.sauceJump()
+            self.allSprites.remove(spr)
 
       if isinstance(spr, Platforms):
         if pygame.sprite.collide_rect(player_sprite, spr):
@@ -100,6 +105,8 @@ class JeffGame:
         spr.move()
         if pygame.sprite.collide_rect(player_sprite, spr):
           self.gameOver = True
+          self.player.sprite.die = True
+
           self.playLoseMusic()
         if spr.rect.y > WINDOW_SIZE[1]:
           self.allSprites.remove(spr)
@@ -107,29 +114,30 @@ class JeffGame:
 
 
   def _climb(self):
-    if self.player.sprite.rect.top < WINDOW_SIZE[1] // 4:
+    if self.player.sprite.rect.top < SCROLL_HEIGHT:
       self.player.sprite.pos.y += abs(self.player.sprite.vel.y)
       
-      # Search for platforms to move
       for spr in self.allSprites:
           spr.rect.y += abs(self.player.sprite.vel.y)
 
           if isinstance(spr, Platforms):
             
             if spr.rect.top > WINDOW_SIZE[1]:
-                # Supprime si la plateforme n'est plus sur l'écran
                 if (spr.spring != None):
                   self.allSprites.remove(spr.spring)
+                elif (spr.sauce != None):
+                  self.allSprites.remove(spr.sauce)
                 self.allSprites.remove(spr)
                 spr.kill()
                 self.score += 10
 
-                # Ajoute une nouvelle plateforme pour compenser
                 new_plat = self.genPlatforms()
                 if new_plat:
                   self.allSprites.add(new_plat)
                   if new_plat.spring != None:
                     self.allSprites.add(new_plat.spring)
+                  elif new_plat.sauce != None:
+                    self.allSprites.add(new_plat.sauce)
       
       if not self.ennemy:
         rnd = random.randint(0,100)
@@ -147,12 +155,15 @@ class JeffGame:
 
       if self.count > 1500:
         self.gameOver = True
+        self.player.sprite.die = True
+
         self.playLoseMusic()
         for spr in self.allSprites:
           self.allSprites.remove(spr)
           spr.kill()
 
   def genPlatforms(self, top=True):
+    # TODO 
     x = random.randint(65, WINDOW_SIZE[0] - 65) # la moitié d'une plateforme fait 55px, ici avec une marge de 10
  
     bad_ys = []
@@ -170,12 +181,25 @@ class JeffGame:
         y = random.randint(-200, 50)
       else:
         y = random.randint(0,WINDOW_SIZE[1] // 2)
+      
+      for plat in self.allSprites:
+        if isinstance(plat,Platforms):
+          platCenter = Vector2(plat.rect.center)
+          newPlatCenter = Vector2(x,y)
+          dist = newPlatCenter.distance_to(platCenter)
+          print(dist)
+          if  dist < 270: # J'ai essayé de faire en sorte que la plateforme ne spawn pas si elle n'est pas à la 
+          # bonne distance (270 px) d'au moins une autre plateforme  (on peut aussi ajouter newPlatCenter.y > platCenter.y pour être sur que ça spawn au dessus)
+          # Problème : Freeze le temps de chargement + plateforme qui spawn pas.
+            good = True
+            for bad_y in bad_ys:
+              if bad_y[0] <= y <= bad_y[1]:
+                good = False
+                break
+          else:
+            good = False
+          
 
-      good = True
-      for bad_y in bad_ys:
-        if bad_y[0] <= y <= bad_y[1]:
-          good = False
-          break
       
       attemps += 1
 
@@ -192,8 +216,6 @@ class JeffGame:
       return Platforms(x,y)
     
   def gameOverScreen(self):
-    
-
     pygame.mouse.set_visible(1)
     text = fontGameOver.render(f"Score: {self.score}", True, "BLACK")
     text_rect = text.get_rect(center=(WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2 - 130))
@@ -232,7 +254,7 @@ class JeffGame:
 
 
   def playLoseMusic(self):
-    pygame.mixer.music.pause()
+    pygame.mixer.stop()
     self.lose = pygame.mixer.Sound("./content/sounds/effects/lose.mp3")
     self.lose.set_volume(0.1)
     self.lose.play() 

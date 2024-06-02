@@ -18,7 +18,7 @@ WINDOW_SIZE = (480,720)
 
 # Jeff.py
 PADDING = 20
-
+SCROLL_HEIGHT = WINDOW_SIZE[1] // 2
 # Player.py
 SPEED = 7
 JUMP_HEIGHT = 12

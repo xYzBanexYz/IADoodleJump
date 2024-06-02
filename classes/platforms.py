@@ -3,17 +3,25 @@ from random import randint
 
 from config import WINDOW_SIZE, SPEED
 from entities.spring import Spring
+from entities.sauce import Sauce
 class Platforms(pygame.sprite.Sprite):
 
   def __init__(self, x, y):
     super().__init__()
     self.image = pygame.image.load("./content/images/Game/frite.png").convert_alpha()
-    self.rect = self.image.get_rect(midtop=(x + randint(-45, 45), y))
+    self.rect = self.image.get_rect(midtop=(x, y))
     rnd = randint(0,100)
     if rnd > 70:
-      self.spring =  Spring(x,y)
+      self.spring =  Spring(x + randint(-45, 45),y)
     else:
       self.spring = None
+    rnd = randint(0,100)
+
+    if rnd > 90 and not self.spring:
+      self.sauce = Sauce(x + randint(-45, 45),y)
+    else:
+      self.sauce = None
+    
 
 class Nevada(Platforms):
   def __init__(self, x, y):
@@ -22,6 +30,7 @@ class Nevada(Platforms):
     self.image = pygame.image.load("./content/images/Game/nevada.png").convert_alpha()
     self.rect = self.image.get_rect(center=(x, y))
     self.spring = None
+    self.sauce = None
 
   def crash(self):
     self.image = pygame.image.load("./content/images/Game/brokenNevada.png").convert_alpha()
@@ -43,5 +52,7 @@ class MovingFrite(Platforms):
       self.dir = -self.dir
     if self.spring != None:
       self.spring.rect.x = self.rect.x
+    if self.sauce != None:
+      self.sauce.rect.x = self.rect.x
 
   
