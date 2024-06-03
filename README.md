@@ -1,10 +1,15 @@
-# JeffJump
-
 <p align="center">
-  <img src="content/images/menu/menu_image.png" alt="Jeff Tuche" width="200">
+  <img src="content/images/Menu/menu_image.png" alt="Jeff  Jump" width="200">
 </p>
 
-JeffJump est un jeu inspiré du célèbre Doodle Jump, adapté au monde des fameux et légendaires Tuche. Au cœur de ce projet, on retrouve la NevadIA, un algorithme génératif qui joue à JeffJump.
+# JeffJump
+
+JeffJump est un jeu inspiré du célèbre Doodle Jump, adapté au monde des fameux et légendaires Tuche. Au cœur de ce projet, on retrouve la NevadIA, un algorithme génératif qui joue à JeffJump. Ce jeu a été réalisé dans le contexte d'un projet étudiant du département informatique  de l'INSA Hauts-de-France.
+
+## Auteurs
+
+- [Nicolas PUTON · @putonnicolas](https://github.com/putonnicolas)
+- [Louis POTIER · @xYzBanexYz](https://github.com/xYzBanexYz)
 
 ## Recréation du jeu sous la forme de JeffJump
 Adapter Doodle Jump à l'univers des Tuche n'a pas été une tâche facile, mais le jeu est désormais jouable !
@@ -39,7 +44,7 @@ Il existe trois types de plateformes :
   </li>
   <li>Nevada
     <p align="center">
-      <img src="content/images/Game/nevada.png" alt="Nevada">
+      <img src="content/images/Game/Nevada.png" alt="Nevada">
     </p>
   </li>
 </ul>
@@ -48,9 +53,17 @@ Il existe trois types de plateformes :
 
 Pour avancer plus vite, certaines plateformes offrent des ressorts et des Sauces (sorte de jetpack) qui feront avancer Jeff encore plus rapidement !
 
-<div style="display: flex; justify-content: center; align-items: center;">
-  <img src="content/images/Game/springHigh.png" alt="Ressort" style="margin-right: 50px;">
-  <img src="content/images/Game/sauce.png" alt="Sauce" style="margin-left: 50px;">
-</div>
+<p align="center">
+  <img src="content/images/Game/springHigh.png" alt="Ressort" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="content/images/Game/sauce.png" alt="Sauce" />
+</p>
+
 
 ## Création d'un modèle d'IA avec apprentissage par renforcement NevadIA (En cours de développement)
+
+
+
+## Licence
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
