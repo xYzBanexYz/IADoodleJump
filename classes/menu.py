@@ -4,9 +4,10 @@ from classes.button import Button
 from config import WINDOW_SIZE, clock, quitGame, display
 
 class Menu():
+  """Represents the main menu of the game."""
+
   def __init__(self):
     self.start = False
-
     self.playMusic = False
     self.menu_background = pygame.image.load("./content/images/Menu/menu_background.jpg").convert()
 
@@ -29,16 +30,20 @@ class Menu():
       self.playMusic = True
 
   def update(self):
+    """Updates the menu and handles user input.
+
+    Returns:
+      str: The action to perform based on user input. Can be "play" or "exit".
+    """
     if not self.playMusic:
       pygame.mixer.music.load("./content/sounds/music/monaco.mp3")
       pygame.mixer.music.set_volume(0.5)
       pygame.mixer.music.play(loops=-1) 
       self.playMusic = True
 
-
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
-          quitGame()
+        quitGame()
 
     self._updateMenuUI()
 
@@ -46,7 +51,7 @@ class Menu():
       pygame.mixer.music.stop()
       self.playMusic = False
       return "play"
-
+    
     elif self.exit_btn.click():
       quitGame()
       return "exit"       
@@ -54,6 +59,7 @@ class Menu():
     clock.tick(60)
 
   def _updateMenuUI(self):
+    """Updates the menu user interface."""
     display.blit(self.menu_background, (0,0))
     display.blit(self.jeff_menu, self.jeff_menu_rect)
 

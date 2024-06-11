@@ -6,7 +6,21 @@ from classes.menu import Menu
 from classes.Jeff import JeffGame
 from classes.PauseMenu import PauseMenu
 
+import pygame
+
 def main():
+  """
+  The main function of the game.
+  
+  This function controls the flow of the game. It initializes the menu, game, and pause menu objects,
+  and enters a loop that continues until the game restarts. Within the loop, it checks if the game is
+  paused or if the menu is active, and updates the corresponding objects accordingly. If neither the
+  game is paused nor the menu is active, it hides the mouse cursor and advances the game by one step.
+  
+  Returns:
+    str: The string "continue" indicating that the game should continue running or not.
+  """
+  
   play_intro()
 
   menu = Menu()

@@ -4,7 +4,7 @@
 
 # JeffJump
 
-JeffJump est un jeu inspiré du célèbre Doodle Jump, adapté au monde des fameux et légendaires Tuche. Au cœur de ce projet, on retrouve la NevadIA, un algorithme génératif qui joue à JeffJump. Ce jeu a été réalisé dans le contexte d'un projet étudiant du département informatique  de l'INSA Hauts-de-France.
+JeffJump est un jeu inspiré du célèbre Doodle Jump, adapté au monde des fameux et légendaires Tuche. Ce jeu a été réalisé dans le contexte d'un projet étudiant du département informatique  de l'INSA Hauts-de-France.
 
 ## Auteurs
 
@@ -58,11 +58,6 @@ Pour avancer plus vite, certaines plateformes offrent des ressorts et des Sauces
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="content/images/Game/sauce.png" alt="Sauce" />
 </p>
-
-
-## Création d'un modèle d'IA avec apprentissage par renforcement NevadIA (En cours de développement)
-
-
 
 ## Licence
 

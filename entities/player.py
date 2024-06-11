@@ -4,8 +4,16 @@ from config import SPEED, JUMP_HEIGHT, GRAVITY, FRICTION, WINDOW_SIZE, quitGame
 vec = pygame.math.Vector2
 
 class Player(pygame.sprite.Sprite):
+  """Represents the player character in the game."""
 
   def __init__(self, x, y):
+    """
+    Initializes a new instance of the Player class.
+
+    Args:
+      x (int): The initial x-coordinate of the player.
+      y (int): The initial y-coordinate of the player.
+    """
     super().__init__()
     self.die = False
     self.jumping = False
@@ -42,6 +50,11 @@ class Player(pygame.sprite.Sprite):
     self.springSound.set_volume(0.1)
 
   def _input(self):
+    """
+    Handles the player's input.
+
+    This method checks for keyboard input and updates the player's position accordingly.
+    """
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_LEFT] or keys[pygame.K_q]:
@@ -54,6 +67,12 @@ class Player(pygame.sprite.Sprite):
       self.pause = False
 
   def jump(self, boost=1):
+    """
+    Makes the player jump.
+
+    Args:
+      boost (float, optional): The boost factor applied to the jump. Defaults to 1.
+    """
     if boost != 1:
       self.springSound.play()
     else:
@@ -61,6 +80,11 @@ class Player(pygame.sprite.Sprite):
     self.vel.y = -self.jump_height * boost
 
   def _gravity(self):
+    """
+    Applies gravity to the player.
+
+    This method updates the player's position based on gravity and velocity.
+    """
     if not self.sauce:
       self.acc = vec(0, GRAVITY)
     else:
@@ -71,13 +95,18 @@ class Player(pygame.sprite.Sprite):
     self.pos += self.vel + 0.5 * self.acc
 
     if self.pos.x > WINDOW_SIZE[0]:
-        self.pos.x = 0
+      self.pos.x = 0
     if self.pos.x < 0:
-        self.pos.x = WINDOW_SIZE[0]
+      self.pos.x = WINDOW_SIZE[0]
 
     self.rect.midbottom = self.pos
 
   def update(self):
+    """
+    Updates the player's state.
+
+    This method is called every frame to update the player's position and animation.
+    """
     self._input()
     self._gravity()
 
@@ -94,11 +123,21 @@ class Player(pygame.sprite.Sprite):
         self.sauce = False  
 
   def sauceJump(self):
+    """
+    Activates the sauce power-up.
+
+    This method enables the sauce power-up and plays the sauce sound effect.
+    """
     self.sauce = True
     self.sauceTime = pygame.time.get_ticks() 
     self.sauceSound.play()
   
   def _animate_sauce(self):
+    """
+    Animates the sauce power-up.
+
+    This method updates the player's image to animate the sauce power-up.
+    """
     current_time = pygame.time.get_ticks()
     
     if current_time - self.sauceLastFrameTime > self.sauceAnimTime:

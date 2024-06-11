@@ -11,6 +11,12 @@ class Button():
       self.clicked = False
      
     def click(self):
+      """
+      Checks if the button is clicked.
+
+      Returns:
+        bool: True if the button is clicked, False otherwise.
+      """
       click = False
       pos = pygame.mouse.get_pos()
 
@@ -22,6 +28,6 @@ class Button():
       if pygame.mouse.get_pressed()[0] == 0:
         self.clicked = False
       return click
-    
+  
     def draw(self, surface):
       surface.blit(self.image, (self.rect.x, self.rect.y))

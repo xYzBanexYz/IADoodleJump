@@ -3,7 +3,12 @@ import pygame
 from classes.button import Button
 from config import quitGame, display, WINDOW_SIZE
 
+import pygame
+
 class PauseMenu:
+  """
+  Represents the pause menu of the game.
+  """
 
   def __init__(self):
     resume_image = pygame.image.load("./content/images/Pause/resume_btn.png").convert_alpha()
@@ -17,8 +22,13 @@ class PauseMenu:
     self.jeff = pygame.image.load("./content/images/Pause/jeff.png").convert_alpha()
     self.jeffRect = self.jeff.get_rect(center= (WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2 - 200)) 
 
-
   def update(self):
+    """
+    Updates the pause menu.
+
+    Returns:
+      str: The action to perform based on user input. Possible values are "play", "menu", or an empty string.
+    """
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
         quitGame()
@@ -37,6 +47,9 @@ class PauseMenu:
     return ""
   
   def _updateUI(self):
+    """
+    Updates the user interface of the pause menu.
+    """
     display.blit(self.background, (0,0))
     display.blit(self.jeff, self.jeffRect)
 

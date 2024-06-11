@@ -15,10 +15,23 @@ font = pygame.font.Font("./content/fonts/PixelifySansSemiBold.ttf", 20)
 fontGameOver = pygame.font.Font("./content/fonts/PixelifySansSemiBold.ttf", 50)
 
 class JeffGame:
+  """
+  The main class representing the Jeff Jump game.
+  """
+
   def __init__(self):
+    """
+    Initializes the game by setting up the initial game state.
+    """
     self.restartGame(menu=True)
 
   def restartGame(self, menu=False):
+    """
+    Restarts the game by resetting the game state.
+
+    Parameters:
+    - menu (bool): Whether to show the menu screen after restarting the game.
+    """
     self.pause = False
     self.menu = menu
     self.restart = False
@@ -31,25 +44,29 @@ class JeffGame:
     self.allSprites = pygame.sprite.Group()
     self.allSprites.add(self.player, Platforms(*firstPos), Platforms(firstPos[0] - 100, firstPos[1] - 270))
     
-    for i in range(4):
-        platform = self.genPlatforms(False)
-        if platform:
-            self.allSprites.add(platform)
+    for _ in range(4):
+      platform = self.genPlatforms(False, firstPos)
+      if platform:
+        self.allSprites.add(platform)
 
-    for i in range(4):
-        platform = self.genPlatforms()
-        if platform:
-            self.allSprites.add(platform)
+    for _ in range(50):
+      platform = self.genPlatforms()
+      if platform:
+        self.allSprites.add(platform)
 
     self.background = pygame.image.load("./content/images/Game/back.png").convert()
     self.score = 1
     self.count = 0
 
-
   def play_step(self):
+    """
+    Executes a single step of the game loop.
+
+    This function handles user input, updates the game state, and renders the game.
+    """
     for event in pygame.event.get():
       if event.type == pygame.QUIT:
-          quitGame()
+        quitGame()
       elif event.type == pygame.KEYDOWN: 
         if event.key == pygame.K_ESCAPE:
           self.pause =  True
@@ -62,10 +79,12 @@ class JeffGame:
     else:
       self.gameOverScreen()
 
-
     clock.tick(60)
 
   def _update(self):
+    """
+    Updates the game display by rendering the background, score, and all sprites.
+    """
     display.blit(self.background, (0,0))
 
     text = font.render(f"Score: {self.score}", False, "BLACK")
@@ -74,6 +93,11 @@ class JeffGame:
     pygame.display.update()
   
   def _checkCollisions(self):
+    """
+    Checks for collisions between the player and other sprites in the game.
+
+    This function handles collision logic for springs, sauces, platforms, enemies, and other special sprites.
+    """
     player_sprite = self.player.sprite
     for spr in self.allSprites:
       if isinstance(spr, Spring):
@@ -112,33 +136,41 @@ class JeffGame:
           self.allSprites.remove(spr)
           self.ennemy = False
 
-
   def _climb(self):
+    """
+    Handles the climbing behavior of the player.
+
+    This function moves the player and all sprites upwards when the player reaches the top of the screen.
+    It also generates new platforms and enemies as the player climbs higher.
+    """
     if self.player.sprite.rect.top < SCROLL_HEIGHT:
       self.player.sprite.pos.y += abs(self.player.sprite.vel.y)
       
       for spr in self.allSprites:
-          spr.rect.y += abs(self.player.sprite.vel.y)
+        spr.rect.y += abs(self.player.sprite.vel.y)
 
-          if isinstance(spr, Platforms):
-            
-            if spr.rect.top > WINDOW_SIZE[1]:
-                if (spr.spring != None):
-                  self.allSprites.remove(spr.spring)
-                elif (spr.sauce != None):
-                  self.allSprites.remove(spr.sauce)
-                self.allSprites.remove(spr)
-                spr.kill()
-                self.score += 10
+        if isinstance(spr, Platforms):
+          
+          if spr.rect.top > WINDOW_SIZE[1]:
+            if (spr.spring != None):
+              spr.spring.kill()
+              del spr.spring
+            elif (spr.sauce != None):
+              spr.sauce.kill()
+              del spr.sauce
+            spr.kill()
+            del spr
 
-                new_plat = self.genPlatforms()
-                if new_plat:
-                  self.allSprites.add(new_plat)
-                  if new_plat.spring != None:
-                    self.allSprites.add(new_plat.spring)
-                  elif new_plat.sauce != None:
-                    self.allSprites.add(new_plat.sauce)
-      
+            self.score += 10
+
+            new_plat = self.genPlatforms()
+            if new_plat:
+              self.allSprites.add(new_plat)
+              if new_plat.spring != None:
+                self.allSprites.add(new_plat.spring)
+              elif new_plat.sauce != None:
+                self.allSprites.add(new_plat.sauce)
+    
       if not self.ennemy:
         rnd = random.randint(0,100)
         if rnd > 95 and self.score % 2 == 1:
@@ -161,61 +193,84 @@ class JeffGame:
         for spr in self.allSprites:
           self.allSprites.remove(spr)
           spr.kill()
+      
+    if len(self.allSprites) < 50:
+      plat = self.genPlatforms()
+      if plat:
+        self.allSprites.add(plat)
 
-  def genPlatforms(self, top=True):
-    # TODO 
-    x = random.randint(65, WINDOW_SIZE[0] - 65) # la moitié d'une plateforme fait 55px, ici avec une marge de 10
- 
-    bad_ys = []
-    for plat in self.allSprites:
-      if isinstance(plat, Platforms):
-        bad_ys.append((plat.rect.y-PADDING, plat.rect.y + PADDING + plat.rect.height))
+  def genPlatforms(self, top=True, firstPos=None):
+    """
+    Generates a new platform.
 
-    bad_ys.append((self.player.sprite.pos[1] - PADDING, self.player.sprite.pos[1] + PADDING + self.player.sprite.rect.height))    
-    max_attempts = 1000
-    attemps = 0
-    good = False
+    Parameters:
+    - top (bool): Whether the platform should be generated at the top of the screen.
+    - firstPos (tuple): The position of the first platform.
 
-    while not good and attemps < max_attempts:
-      if top:
-        y = random.randint(-200, 50)
+    Returns:
+    - The generated platform sprite, or None if no platform was generated.
+    """
+    x = random.randint(100, WINDOW_SIZE[0] - 100)
+
+    plats = [plat for plat in self.allSprites if isinstance(plat, Platforms)]
+
+    if plats:
+      plats.sort(key=lambda plat: plat.rect.y, reverse=True)
+      miniPlat_x, miniPlat_y = plats[-1].rect.x, plats[-1].rect.y
+
+      upHeight = -5000
+      if miniPlat_y < upHeight:
+        miniPlat_y = upHeight
+
+      mini = Vector2(miniPlat_x, miniPlat_y)
+
+      attemps = 0
+      good = False
+
+      while not good and attemps < 100:
+        if top:
+          y = random.randint(upHeight, miniPlat_y)
+        else:
+          y = random.randint(0, firstPos[1])
+
+        current = Vector2(x, y)
+        dist = current.distance_to(mini)
+
+        if 100 < dist < 250:
+          good = True
+
+        attemps += 1
+
+      if not good:
+        return None
+
+      proba = random.randint(0,100)
+      if proba > 75:
+        return MovingFrite(x,y)
+      elif 50 < proba <= 75:
+        return Nevada(x,y)
       else:
-        y = random.randint(0,WINDOW_SIZE[1] // 2)
+        return Platforms(x,y)
       
-      for plat in self.allSprites:
-        if isinstance(plat,Platforms):
-          platCenter = Vector2(plat.rect.center)
-          newPlatCenter = Vector2(x,y)
-          dist = newPlatCenter.distance_to(platCenter)
-          print(dist)
-          if  dist < 270: # J'ai essayé de faire en sorte que la plateforme ne spawn pas si elle n'est pas à la 
-          # bonne distance (270 px) d'au moins une autre plateforme  (on peut aussi ajouter newPlatCenter.y > platCenter.y pour être sur que ça spawn au dessus)
-          # Problème : Freeze le temps de chargement + plateforme qui spawn pas.
-            good = True
-            for bad_y in bad_ys:
-              if bad_y[0] <= y <= bad_y[1]:
-                good = False
-                break
-          else:
-            good = False
-          
-
+    elif len(self.allSprites) < 6 and top:
+      y = random.randint(0,WINDOW_SIZE[1])
+      proba = random.randint(0,100)
+      if proba > 75:
+        return MovingFrite(x,y)
+      elif 50 < proba <= 75:
+        return Nevada(x,y)
+      else:
+        return Platforms(x,y)
       
-      attemps += 1
-
-    if not good:
-      return None
-          
-    proba = random.randint(0,100)
-
-    if proba > 75:
-      return MovingFrite(x,y)
-    elif 50 < proba <= 75:
-      return Nevada(x,y)
     else:
-      return Platforms(x,y)
+      return None
     
   def gameOverScreen(self):
+    """
+    Displays the game over screen.
+
+    This function shows the player's score, a game over message, and buttons to restart the game or go back to the menu.
+    """
     pygame.mouse.set_visible(1)
     text = fontGameOver.render(f"Score: {self.score}", True, "BLACK")
     text_rect = text.get_rect(center=(WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2 - 130))
@@ -252,9 +307,12 @@ class JeffGame:
 
     pygame.display.update()
 
-
   def playLoseMusic(self):
+    """
+    Plays the lose music when the player loses the game.
+    """
     pygame.mixer.stop()
     self.lose = pygame.mixer.Sound("./content/sounds/effects/lose.mp3")
     self.lose.set_volume(0.1)
-    self.lose.play() 
+    self.lose.play()
+

@@ -3,6 +3,11 @@ import pygame
 from config import WINDOW_SIZE, display
 
 def play_intro():
+    """
+    Plays the introduction sequence of the game.
+
+    This function hides the mouse cursor, loads and displays the intro with the iconic "Jeff Jump" sound in the background!
+    """
     pygame.mouse.set_visible(0)
     pro_max = pygame.image.load("./content/images/pro_max_plus.png").convert_alpha()
     pro_max_rect = pro_max.get_rect(center=(WINDOW_SIZE[0]//2, WINDOW_SIZE[1]//2))
@@ -25,4 +30,4 @@ def play_intro():
         timer = max(0, 4000 - (pygame.time.get_ticks() - start_time))
         pygame.display.flip()
 
-    pygame.mouse.set_visible(True) 
+    pygame.mouse.set_visible(True)

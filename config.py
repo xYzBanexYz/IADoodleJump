@@ -13,12 +13,13 @@ except:
   pygame.quit()
   quit()
 
-#global variables
+# Global variables
 WINDOW_SIZE = (480,720)
 
 # Jeff.py
 PADDING = 20
 SCROLL_HEIGHT = WINDOW_SIZE[1] // 2
+
 # Player.py
 SPEED = 7
 JUMP_HEIGHT = 12
@@ -33,6 +34,9 @@ pygame.display.set_icon(icon)
 pygame.display.set_caption('Jeff Jump')
 
 def quitGame():
+  """
+  Quits the game by performing the necessary cleanup and exiting the program.
+  """
   pygame.quit()
   logger.info("Jeu quitté.")
   sys.exit()
