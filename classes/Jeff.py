@@ -127,7 +127,7 @@ class JeffGame:
 
       if isinstance(spr, Ennemy):
         spr.move()
-        if pygame.sprite.collide_rect(player_sprite, spr):
+        if pygame.sprite.collide_circle(player_sprite, spr):
           self.gameOver = True
           self.player.sprite.die = True
 

@@ -29,6 +29,7 @@ class Player(pygame.sprite.Sprite):
     self.jeffSauceImages = [jeffSauce1, jeffSauce2]
     self.image = self.jeffImage[0]
     self.rect = self.image.get_rect(midbottom=(x, y-100))
+    self.radius = self.rect.width//2 - 5
     
     self.pos = vec(x, y-100)
     self.vel = vec(0, 0)

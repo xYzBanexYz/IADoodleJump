@@ -15,6 +15,7 @@ class Ennemy(pygame.sprite.Sprite):
         image = pygame.image.load("./content/images/Game/tucheDaddy.png").convert_alpha()
         self.image = pygame.transform.scale_by(image, 0.8)
         self.rect = self.image.get_rect(center=(x, y))
+        self.radius = self.rect.width//2 - 5
     
     def move(self):
         """
