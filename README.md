@@ -10,6 +10,8 @@ JeffJump est un jeu inspiré du célèbre Doodle Jump, adapté au monde des fame
 
 - [Nicolas PUTON · @putonnicolas](https://github.com/putonnicolas)
 - [Louis POTIER · @xYzBanexYz](https://github.com/xYzBanexYz)
+## Co-auteur
+- [Keyne PEKAR · @keynepekar](https://github.com/keynepekar)
 
 ## Recréation du jeu sous la forme de JeffJump
 Adapter Doodle Jump à l'univers des Tuche n'a pas été une tâche facile, mais le jeu est désormais jouable !
